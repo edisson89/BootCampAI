@@ -18,6 +18,7 @@ def crear_pdf():
         c.drawString(100, 750, "¡Hola Bootcamp IA!")
         c.drawString(100, 700, "Este es un PDF de prueba generado con Python.")
         c.drawString(100, 650, "Aquí probamos la limpieza y el chunking.")
+        c.drawString(100,650,'El mejor Programador es Edisson.')
         c.save()
         print(f"✅ ¡Éxito! Archivo '{NOMBRE_ARCHIVO}' creado en la carpeta raíz.")
     except Exception as e:
