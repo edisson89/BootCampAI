@@ -1,0 +1,14 @@
+ai-bootcamp/
+│
+├── venv/                # (No toques esto, son las librerías)
+├── data/                # Aquí guardarás tus PDFs o CSVs para el RAG
+│   └── raw/             # Archivos originales
+├── src/                 # Todo tu código fuente va aquí
+│   ├── __init__.py
+│   ├── agents/          # Lógica de tus agentes
+│   └── utils/           # Funciones de ayuda (limpiar texto, leer PDF)
+├── notebooks/           # Para tus experimentos rápidos (Jupyter)
+├── .env                 # TUS CLAVES SECRETAS (API KEYS)
+├── .gitignore           # Para no subir claves a GitHub
+├── main.py              # Punto de entrada de tu app
+└── requirements.txt     # Lista de dependencias
