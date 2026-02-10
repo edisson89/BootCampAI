@@ -1,0 +1,1 @@
+¡Hola Bootcamp IA! Este es un PDF de prueba generado con Python. Aquí probamos la limpieza y el chunking. 
