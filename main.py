@@ -1,81 +1,61 @@
 """
-Script Completo: Ingesta -> Limpieza -> Chunking
+Pipeline ETL con Metadatos y Exportación JSON
 Bootcamp IA - Semana 1
 """
-
 import os
 import re
+import json  # <--- Nuevo amigo: Para guardar datos estructurados
 from pypdf import PdfReader
 
-# --- CONFIGURACIÓN ---
 NOMBRE_PDF = "documento.pdf"
-# ---------------------
 
+def limpiar_texto(texto):
+    texto = texto.replace("\n", " ")
+    return re.sub(r'\s+', ' ', texto).strip()
 
-def limpiar_texto(texto_crudo):
-    """
-    Fase 2: Limpieza
-    Elimina saltos de línea y espacios extra.
-    """
-    texto = texto_crudo.replace("\n", " ")
-    texto = re.sub(r"\s+", " ", texto)
-    return texto.strip()
-
-
-def crear_chunks(texto, tamano=100):
-    """
-    Fase 3: Chunking (NUEVA FUNCIÓN)
-    Corta el texto en pedazos de 'tamano' caracteres.
-    """
+def crear_chunks(texto, tamano=150):
     chunks = []
-    # Recorremos el texto dando saltos de 'tamano' en 'tamano'
     for i in range(0, len(texto), tamano):
-        trozo = texto[i : i + tamano]
-        chunks.append(trozo)
+        chunks.append(texto[i : i + tamano])
     return chunks
 
-
-def extraer_texto():
-    print(f"📂 Carpeta actual: {os.getcwd()}")
-
+def procesar_pdf():
     if not os.path.exists(NOMBRE_PDF):
-        print(f"❌ ERROR: No encuentro '{NOMBRE_PDF}'.")
-        print("   -> Asegúrate de que el archivo esté en esta misma carpeta.")
+        print(f"❌ Primero genera el PDF con: python src/generar_pdf.py")
         return
 
-    try:
-        reader = PdfReader(NOMBRE_PDF)
-        print(f"✅ PDF encontrado. Procesando {len(reader.pages)} páginas...\n")
+    reader = PdfReader(NOMBRE_PDF)
+    base_conocimiento = []  # Aquí guardaremos todo ordenado
 
-        texto_completo = ""
+    print(f"✅ Procesando {NOMBRE_PDF}...")
 
-        for i, pagina in enumerate(reader.pages):
-            texto_sucio = pagina.extract_text()
+    for i, pagina in enumerate(reader.pages):
+        texto_crudo = pagina.extract_text()
+        
+        if texto_crudo:
+            texto_limpio = limpiar_texto(texto_crudo)
+            lista_chunks = crear_chunks(texto_limpio, tamano=150)
 
-            if texto_sucio:
-                # 1. Limpiamos
-                texto_limpio = limpiar_texto(texto_sucio)
+            # --- LA MAGIA: Guardamos con METADATOS ---
+            for chunk in lista_chunks:
+                dato = {
+                    "id": len(base_conocimiento) + 1,
+                    "texto": chunk,
+                    "metadata": {
+                        "fuente": NOMBRE_PDF,
+                        "pagina": i + 1,  # Guardamos el número de página real
+                        "longitud": len(chunk)
+                    }
+                }
+                base_conocimiento.append(dato)
+            # -----------------------------------------
 
-                # 2. Creamos los CHUNKS (Pedacitos)
-                mis_chunks = crear_chunks(texto_limpio, tamano=100)
-
-                print(f"--- Página {i+1}: Se generaron {len(mis_chunks)} chunks ---")
-
-                # Mostramos los primeros 3 chunks como ejemplo
-                for k, chunk in enumerate(mis_chunks[:3]):
-                    print(f"   [Chunk {k+1}]: {chunk}")
-                print("   ...\n")
-
-                texto_completo += texto_limpio + " "
-
-        # Guardamos todo junto por si acaso
-        with open("resultado.txt", "w", encoding="utf-8") as f:
-            f.write(texto_completo)
-        print("💾 Texto completo guardado en 'resultado.txt'.")
-
-    except Exception as e:
-        print(f"💥 Error: {e}")
-
+    # Guardar en JSON (Simulando una Base de Datos)
+    with open("base_conocimiento.json", "w", encoding="utf-8") as f:
+        json.dump(base_conocimiento, f, indent=4, ensure_ascii=False)
+    
+    print(f"💾 ¡Listo! Se guardaron {len(base_conocimiento)} chunks en 'base_conocimiento.json'")
+    print("   -> Abre ese archivo para ver cómo quedó tu data estructurada.")
 
 if __name__ == "__main__":
-    extraer_texto()
+    procesar_pdf()
